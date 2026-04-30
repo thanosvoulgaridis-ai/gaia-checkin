@@ -116,6 +116,7 @@ async function checkin(type) {
   const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
   const { error } = await sb.from('checkins').insert([{
     employee_id: parseInt(employeeId),
+    employee_name: employeeName,
     type: type,
     created_at: now.toISOString()
   }]);
