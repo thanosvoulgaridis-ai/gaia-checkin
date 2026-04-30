@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShiftKos — Προσέλευση</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -11,198 +12,47 @@
     --navy: #0a1628; --gold: #c9a84c; --cream: #f5f0e8;
     --success: #4caf7d; --alert: #e05c4b; --text-muted: #8899aa;
   }
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--navy);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  .logo {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    color: var(--gold);
-    margin-bottom: 4px;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--gold); margin-bottom: 4px; }
   .logo span { color: white; }
-  .hotel-name {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-bottom: 40px;
-    text-align: center;
-  }
-  .clock {
-    font-family: 'DM Serif Display', serif;
-    font-size: 56px;
-    color: var(--cream);
-    letter-spacing: 3px;
-    margin-bottom: 6px;
-    text-align: center;
-  }
-  .date {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 40px;
-    text-align: center;
-  }
-  .select-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  select {
-    width: 100%;
-    max-width: 340px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 12px;
-    padding: 14px 18px;
-    color: white;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    outline: none;
-    margin-bottom: 28px;
-    appearance: none;
-  }
+  .hotel-name { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
+  .clock { font-family: 'DM Serif Display', serif; font-size: 56px; color: var(--cream); letter-spacing: 3px; margin-bottom: 6px; text-align: center; }
+  .date { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
+  .select-label { font-size: 12px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+  select { width: 100%; max-width: 340px; background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 18px; color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; margin-bottom: 28px; appearance: none; }
   select option { background: #0a1628; }
-  .btn-group {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    width: 100%;
-    max-width: 340px;
-  }
-  .btn {
-    width: 100%;
-    padding: 20px;
-    border-radius: 16px;
-    border: none;
-    font-family: 'DM Serif Display', serif;
-    font-size: 22px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-  }
-  .btn-start {
-    background: linear-gradient(135deg, #4caf7d, #2d7a50);
-    color: white;
-  }
-  .btn-end {
-    background: linear-gradient(135deg, #e05c4b, #a03020);
-    color: white;
-  }
-  .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-  .btn:active { transform: translateY(0); }
-
-  /* SUCCESS SCREEN */
-  .success-screen {
-    display: none;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
+  .btn-group { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
+  .btn { width: 100%; padding: 20px; border-radius: 16px; border: none; font-family: 'DM Serif Display', serif; font-size: 22px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .btn-start { background: linear-gradient(135deg, #4caf7d, #2d7a50); color: white; }
+  .btn-end { background: linear-gradient(135deg, #e05c4b, #a03020); color: white; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+  .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+  .btn:active:not(:disabled) { transform: translateY(0); }
+  .success-screen { display: none; flex-direction: column; align-items: center; text-align: center; }
   .success-screen.show { display: flex; }
-  .success-icon {
-    width: 100px; height: 100px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 48px;
-    margin-bottom: 24px;
-    animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  }
+  .success-icon { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 24px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
   .success-start { background: rgba(76,175,125,0.2); border: 3px solid #4caf7d; }
   .success-end { background: rgba(224,92,75,0.2); border: 3px solid #e05c4b; }
-  .success-name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    color: var(--cream);
-    margin-bottom: 8px;
-  }
-  .success-type {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-  }
-  .success-time {
-    font-family: 'DM Serif Display', serif;
-    font-size: 48px;
-    color: var(--gold);
-    margin-bottom: 32px;
-  }
-  .btn-back {
-    background: rgba(201,168,76,0.1);
-    border: 1px solid rgba(201,168,76,0.3);
-    border-radius: 12px;
-    padding: 14px 32px;
-    color: var(--gold);
-    font-size: 15px;
-    cursor: pointer;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
+  .success-name { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--cream); margin-bottom: 8px; }
+  .success-type { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+  .success-time { font-family: 'DM Serif Display', serif; font-size: 48px; color: var(--gold); margin-bottom: 32px; }
+  .btn-back { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 32px; color: var(--gold); font-size: 15px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
   .btn-back:hover { background: rgba(201,168,76,0.2); }
+  .db-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25); border-radius: 6px; padding: 2px 8px; color: var(--success); margin-bottom: 20px; }
 </style>
 </head>
 <body>
 
-<!-- MAIN SCREEN -->
-<div id="main-screen">
+<div id="main-screen" style="display:flex;flex-direction:column;align-items:center;width:100%">
   <div class="logo">Shift<span>Kos</span></div>
   <div class="hotel-name">🏨 Gaia Garden Hotel</div>
+  <div class="db-tag">🟢 Supabase Live</div>
   <div class="clock" id="clock">00:00</div>
   <div class="date" id="date"></div>
   <div class="select-label">Επιλέξτε το όνομά σας</div>
   <select id="employee-select">
-    <option value="">— Επιλογή —</option>
-    <optgroup label="🍽️ Εστιατόριο">
-      <option>FETAU SHYQYRI</option>
-      <option>HALATA NATALIA</option>
-      <option>KAMPERI SILVANA</option>
-      <option>MORRETO ΑΡΓΥΡΩ ΤΣΑΜΠΙΚΑ</option>
-    </optgroup>
-    <optgroup label="🔧 Συντήρηση">
-      <option>HALATA YEVHEN</option>
-    </optgroup>
-    <optgroup label="🍹 Μπαρ">
-      <option>LEIGH RACHEL-ELIZABETH</option>
-      <option>NOWICKI KATRIN</option>
-      <option>ΚΡΗΤΙΚΟΣ ΣΩΤΗΡΙΟΣ</option>
-      <option>COBANI ELSON</option>
-      <option>ΚΡΗΤΙΚΟΣ ΕΥΣΤΑΘΙΟΣ</option>
-    </optgroup>
-    <optgroup label="🛏️ Οροφοκομία">
-      <option>DOVREVA IVANKA</option>
-      <option>HARJANA FROSINA</option>
-      <option>KOLVANI ALMA</option>
-      <option>QAZIMLLARI BLERTA</option>
-      <option>QORRI BRUNILDA</option>
-      <option>SHKAKU NERTILA</option>
-    </optgroup>
-    <optgroup label="🏨 Υποδοχή">
-      <option>GOXHAJ LORENC</option>
-      <option>ΒΟΥΚΕΛΑΤΟΥ ΣΤΑΜΑΤΑ ΕΛΕΝΗ</option>
-      <option>ΛΑΖΑΡΙΔΗ ΚΩΝΣΤΑΝΤΙΝΑ</option>
-      <option>ΞΕΝΙΚΑΣ ΒΑΣΙΛΗΣ</option>
-      <option>ΦΕΙΖΟ ΜΙΓΚΕΛΑ</option>
-    </optgroup>
-    <optgroup label="🌿 Κήπος">
-      <option>ΘΟΔΩΡΑΚΗΣ ΜΑΡΚΟ</option>
-    </optgroup>
-    <optgroup label="👨‍🍳 Κουζίνα">
-      <option>SPAHO XHOI</option>
-      <option>ΠΟΛΥΓΕΝΗΣ ΒΑΣΙΛΕΙΟΣ</option>
-      <option>BOCI VASIL</option>
-    </optgroup>
+    <option value="">— Φόρτωση... —</option>
   </select>
   <div class="btn-group">
     <button class="btn btn-start" onclick="checkin('start')">🟢 Προσέλευση</button>
@@ -210,7 +60,6 @@
   </div>
 </div>
 
-<!-- SUCCESS SCREEN -->
 <div class="success-screen" id="success-screen">
   <div class="success-icon" id="success-icon">✅</div>
   <div class="success-name" id="success-name"></div>
@@ -220,46 +69,76 @@
 </div>
 
 <script>
-// CLOCK
+const SUPABASE_URL = 'https://yohhvfykdlzcrnnorhke.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_s0Q12lYyridNT8Yos-7qVQ_z_3ACT95';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const ICONS = {'Εστιατόριο':'🍽️','Μπαρ':'🍹','Κουζίνα':'👨‍🍳','Υποδοχή':'🏨','Οροφοκομία':'🛏️','Συντήρηση':'🔧','Κήπος':'🌿'};
+
+let employees = [];
+
 function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
-  document.getElementById('date').textContent = now.toLocaleDateString('el-GR', {weekday:'long', day:'numeric', month:'long'});
+  document.getElementById('clock').textContent = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('date').textContent = now.toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long'});
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// CHECK IN/OUT
-function checkin(type) {
+async function loadEmployees() {
+  const { data, error } = await sb.from('employees').select('*').order('department').order('name');
+  if (error) { console.error(error); return; }
+  employees = data;
   const select = document.getElementById('employee-select');
-  const name = select.value;
-  if (!name) {
-    alert('Παρακαλώ επιλέξτε το όνομά σας!');
-    return;
-  }
-  const now = new Date();
-  const time = now.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
+  select.innerHTML = '<option value="">— Επιλογή —</option>';
+  const grouped = data.reduce((g, e) => { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
+  Object.entries(grouped).forEach(([dept, emps]) => {
+    const icon = ICONS[dept] || '🏢';
+    const group = document.createElement('optgroup');
+    group.label = `${icon} ${dept}`;
+    emps.forEach(emp => {
+      const opt = document.createElement('option');
+      opt.value = emp.id;
+      opt.textContent = emp.name;
+      group.appendChild(opt);
+    });
+    select.appendChild(group);
+  });
+}
 
+async function checkin(type) {
+  const select = document.getElementById('employee-select');
+  const employeeId = select.value;
+  const employeeName = select.options[select.selectedIndex].text;
+  if (!employeeId) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
+  document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+  const now = new Date();
+  const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  const { error } = await sb.from('checkins').insert([{
+    employee_id: employeeId,
+    type: type,
+    created_at: now.toISOString()
+  }]);
+  await sb.from('employees').update({ status: 'ok' }).eq('id', employeeId);
+  document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+  if (error) { alert('❌ Σφάλμα: ' + error.message); return; }
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
   document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
-  document.getElementById('success-name').textContent = name;
+  document.getElementById('success-name').textContent = employeeName;
   document.getElementById('success-type').textContent = type === 'start' ? 'ΕΠΙΤΥΧΗΣ ΔΗΛΩΣΗ ΠΡΟΣΕΛΕΥΣΗΣ' : 'ΕΠΙΤΥΧΗΣ ΔΗΛΩΣΗ ΑΠΟΧΩΡΗΣΗΣ';
   document.getElementById('success-time').textContent = time;
-
   document.getElementById('main-screen').style.display = 'none';
   document.getElementById('success-screen').classList.add('show');
-
-  // Auto back after 5 seconds
   setTimeout(goBack, 5000);
 }
 
 function goBack() {
   document.getElementById('main-screen').style.display = 'flex';
-  document.getElementById('main-screen').style.flexDirection = 'column';
-  document.getElementById('main-screen').style.alignItems = 'center';
   document.getElementById('success-screen').classList.remove('show');
   document.getElementById('employee-select').value = '';
 }
+
+loadEmployees();
 </script>
 </body>
 </html>
