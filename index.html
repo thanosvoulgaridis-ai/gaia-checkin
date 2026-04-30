@@ -120,7 +120,7 @@ async function checkin(type) {
     type: type,
     created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
   }]);
-  await sb.from('employees').update({ status: type === 'start' ? 'ok' : 'done' }).eq('id', parseInt(employeeId));
+  await sb.from('employees').update({ status: type === 'start' ? 'ok' : 'done' }).eq('name', employeeName);
   document.querySelectorAll('.btn').forEach(b => b.disabled = false);
   if (error) { alert('❌ Σφάλμα: ' + error.message); return; }
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
