@@ -118,7 +118,7 @@ async function checkin(type) {
     employee_id: parseInt(employeeId),
     employee_name: employeeName,
     type: type,
-    created_at: now.toISOString()
+    created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
   }]);
   await sb.from('employees').update({ status: 'ok' }).eq('id', employeeId);
   document.querySelectorAll('.btn').forEach(b => b.disabled = false);
