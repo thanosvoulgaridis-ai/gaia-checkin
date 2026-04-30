@@ -109,7 +109,7 @@ async function loadEmployees() {
 async function checkin(type) {
   const select = document.getElementById('employee-select');
   const employeeId = select.options[select.selectedIndex].value;
-  const employeeName = select.options[select.selectedIndex].text;
+  const employeeName = select.options[select.selectedIndex].text.trim();
   if (!employeeId) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
   document.querySelectorAll('.btn').forEach(b => b.disabled = true);
   const now = new Date();
