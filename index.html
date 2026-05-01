@@ -98,7 +98,7 @@ async function loadEmployees() {
     group.label = `${icon} ${dept}`;
     emps.forEach(emp => {
       const opt = document.createElement('option');
-      opt.value = emp.id;
+      opt.value = emp.employees;
       opt.textContent = emp.name;
       group.appendChild(opt);
     });
