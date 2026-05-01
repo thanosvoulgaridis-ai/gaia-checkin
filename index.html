@@ -95,8 +95,9 @@ async function loadEmployees() {
     group.label = icon + ' ' + dept;
     emps.forEach(function(emp) {
       const opt = document.createElement('option');
-      opt.value = emp.name;
-      opt.textContent = emp.name;
+      const empName = String(emp['name']);
+      opt.value = empName;
+      opt.textContent = empName;
       group.appendChild(opt);
     });
     select.appendChild(group);
