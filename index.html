@@ -128,9 +128,10 @@ async function checkin(type) {
     .eq('name', employeeName);
 
   if (updateError) {
-    alert('❌ Update σφάλμα: ' + updateError.message);
+    alert('❌ Update σφάλμα: ' + updateError.message + ' | ' + JSON.stringify(updateError));
+  } else {
+    alert('✅ Update OK για: ' + employeeName);
   }
-
   document.querySelectorAll('.btn').forEach(b => b.disabled = false);
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
   document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
