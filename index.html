@@ -92,8 +92,8 @@ async function loadEmployees() {
   Object.entries(grouped).forEach(([dept, emps]) => {
     const icon = ICONS[dept] || '🏢';
     const group = document.createElement('optgroup');
-    group.label = `${icon} ${dept}`;
-    emps.forEach(emp => {
+    group.label = icon + ' ' + dept;
+    emps.forEach(function(emp) {
       const opt = document.createElement('option');
       opt.value = emp.name;
       opt.textContent = emp.name;
@@ -107,32 +107,33 @@ async function checkin(type) {
   const select = document.getElementById('employee-select');
   const employeeName = select.value;
   if (!employeeName) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
-  document.querySelectorAll('.btn').forEach(b => b.disabled = true);
+  document.querySelectorAll('.btn').forEach(function(b) { b.disabled = true; });
   const now = new Date();
   const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
 
-  const { error } = await sb.from('checkins').insert([{
+  const insertResult = await sb.from('checkins').insert([{
     employee_name: employeeName,
     type: type,
     created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
   }]);
 
-  if (error) {
-    document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-    alert('❌ Σφάλμα: ' + error.message);
+  if (insertResult.error) {
+    document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
+    alert('❌ Insert σφάλμα: ' + insertResult.error.message);
     return;
   }
 
-  const { error: updateError } = await sb.from('employees')
+  const updateResult = await sb.from('employees')
     .update({ status: type === 'start' ? 'ok' : 'done' })
     .eq('name', employeeName);
 
-  if (updateError) {
-    alert('❌ Update σφάλμα: ' + updateError.message + ' | ' + JSON.stringify(updateError));
+  if (updateResult.error) {
+    alert('❌ Update σφάλμα: ' + updateResult.error.message);
   } else {
     alert('✅ Update OK για: ' + employeeName);
   }
-  document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+
+  document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
   document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
   document.getElementById('success-name').textContent = employeeName;
