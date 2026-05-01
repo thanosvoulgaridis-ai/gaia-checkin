@@ -75,8 +75,6 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ICONS = {'Εστιατόριο':'🍽️','Μπαρ':'🍹','Κουζίνα':'👨‍🍳','Υποδοχή':'🏨','Οροφοκομία':'🛏️','Συντήρηση':'🔧','Κήπος':'🌿'};
 
-let employees = [];
-
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
@@ -88,7 +86,6 @@ updateClock();
 async function loadEmployees() {
   const { data, error } = await sb.from('employees').select('*').order('department').order('name');
   if (error) { console.error(error); return; }
-  employees = data;
   const select = document.getElementById('employee-select');
   select.innerHTML = '<option value="">— Επιλογή —</option>';
   const grouped = data.reduce((g, e) => { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
@@ -98,7 +95,7 @@ async function loadEmployees() {
     group.label = `${icon} ${dept}`;
     emps.forEach(emp => {
       const opt = document.createElement('option');
-      opt.value = emp.employees;
+      opt.value = emp.name;
       opt.textContent = emp.name;
       group.appendChild(opt);
     });
@@ -108,22 +105,33 @@ async function loadEmployees() {
 
 async function checkin(type) {
   const select = document.getElementById('employee-select');
-  const employeeId = select.options[select.selectedIndex].value;
-  const employeeName = select.options[select.selectedIndex].text.trim();
-  if (!employeeId) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
+  const employeeName = select.value;
+  if (!employeeName) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
   document.querySelectorAll('.btn').forEach(b => b.disabled = true);
   const now = new Date();
   const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+
   const { error } = await sb.from('checkins').insert([{
-    employee_id: parseInt(employeeId) || null,
     employee_name: employeeName,
     type: type,
     created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
   }]);
-  if (error) { document.querySelectorAll('.btn').forEach(b => b.disabled = false); alert('❌ Σφάλμα: ' + error.message); return; }
-  await sb.from('employees').update({ status: type === 'start' ? 'ok' : 'done' }).eq('employees', parseInt(employeeId));
+
+  if (error) {
+    document.querySelectorAll('.btn').forEach(b => b.disabled = false);
+    alert('❌ Σφάλμα: ' + error.message);
+    return;
+  }
+
+  const { error: updateError } = await sb.from('employees')
+    .update({ status: type === 'start' ? 'ok' : 'done' })
+    .eq('name', employeeName);
+
+  if (updateError) {
+    alert('❌ Update σφάλμα: ' + updateError.message);
+  }
+
   document.querySelectorAll('.btn').forEach(b => b.disabled = false);
-  if (error) { alert('❌ Σφάλμα: ' + error.message); return; }
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
   document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
   document.getElementById('success-name').textContent = employeeName;
