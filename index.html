@@ -29,7 +29,7 @@
   .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .btn:active:not(:disabled) { transform: translateY(0); }
   .success-screen { display: none; flex-direction: column; align-items: center; text-align: center; }
-  .success-.success-screen.show { display: flex; }.show { display: flex; }
+  .success-screen.show { display: flex; }
   .success-icon { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 24px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
   .success-start { background: rgba(76,175,125,0.2); border: 3px solid #4caf7d; }
@@ -43,10 +43,9 @@
 </style>
 </head>
 <body>
-
 <div id="main-screen" style="display:flex;flex-direction:column;align-items:center;width:100%">
   <div class="logo">Shift<span>Kos</span></div>
-  <div class="hotel-name">🏨 Gaia Garden Hotel</div>
+  <div class="hotel-name" id="hotel-name-display">🏨 Gaia Garden Hotel</div>
   <div class="db-tag">🟢 Supabase Live</div>
   <div class="clock" id="clock">00:00</div>
   <div class="date" id="date"></div>
@@ -59,7 +58,6 @@
     <button class="btn btn-end" onclick="checkin('end')">🔴 Αποχώρηση</button>
   </div>
 </div>
-
 <div class="success-screen" id="success-screen">
   <div class="success-icon" id="success-icon">✅</div>
   <div class="success-name" id="success-name"></div>
@@ -67,12 +65,11 @@
   <div class="success-time" id="success-time"></div>
   <button class="btn-back" onclick="goBack()">← Νέα Δήλωση</button>
 </div>
-
 <script>
 const SUPABASE_URL = 'https://yohhvfykdlzcrnnorhke.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_s0Q12lYyridNT8Yos-7qVQ_z_3ACT95';
+const HOTEL_ID = 1;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const ICONS = {'Εστιατόριο':'🍽️','Μπαρ':'🍹','Κουζίνα':'👨‍🍳','Υποδοχή':'🏨','Οροφοκομία':'🛏️','Συντήρηση':'🔧','Κήπος':'🌿'};
 
 function updateClock() {
@@ -84,24 +81,27 @@ setInterval(updateClock, 1000);
 updateClock();
 
 async function loadEmployees() {
-  const { data, error } = await sb.from('employees').select('*').order('department').order('name');
+  const { data, error } = await sb.from('employees').select('*').eq('hotel_id', HOTEL_ID).order('department').order('name');
   if (error) { console.error(error); return; }
   const select = document.getElementById('employee-select');
+  const currentVal = select.value;
   select.innerHTML = '<option value="">— Επιλογή —</option>';
-  const grouped = data.reduce((g, e) => { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
-  Object.entries(grouped).forEach(([dept, emps]) => {
+  const grouped = data.reduce(function(g, e) { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
+  Object.entries(grouped).forEach(function(entry) {
+    const dept = entry[0];
+    const emps = entry[1];
     const icon = ICONS[dept] || '🏢';
     const group = document.createElement('optgroup');
     group.label = icon + ' ' + dept;
     emps.forEach(function(emp) {
       const opt = document.createElement('option');
-      const empName = String(emp['name']);
-      opt.value = empName;
-      opt.textContent = empName;
+      opt.value = emp.name;
+      opt.textContent = emp.name;
       group.appendChild(opt);
     });
     select.appendChild(group);
   });
+  if (currentVal) select.value = currentVal;
 }
 
 async function checkin(type) {
@@ -111,29 +111,17 @@ async function checkin(type) {
   document.querySelectorAll('.btn').forEach(function(b) { b.disabled = true; });
   const now = new Date();
   const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
-
   const insertResult = await sb.from('checkins').insert([{
     employee_name: employeeName,
     type: type,
     created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
   }]);
-
   if (insertResult.error) {
     document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
-    alert('❌ Insert σφάλμα: ' + insertResult.error.message);
+    alert('❌ Σφάλμα: ' + insertResult.error.message);
     return;
   }
-
-  const updateResult = await sb.from('employees')
-    .update({ status: type === 'start' ? 'ok' : 'done' })
-    .eq('name', employeeName);
-
-  if (updateResult.error) {
-    alert('❌ Update σφάλμα: ' + updateResult.error.message);
-  } else {
-    alert('✅ Update OK για: ' + employeeName);
-  }
-
+  await sb.from('employees').update({ status: type === 'start' ? 'ok' : 'done' }).eq('name', employeeName).eq('hotel_id', HOTEL_ID);
   document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
   document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
   document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
@@ -149,9 +137,11 @@ function goBack() {
   document.getElementById('main-screen').style.display = 'flex';
   document.getElementById('success-screen').classList.remove('show');
   document.getElementById('employee-select').value = '';
+  loadEmployees();
 }
 
 loadEmployees();
+setInterval(loadEmployees, 30000);
 </script>
 </body>
 </html>
