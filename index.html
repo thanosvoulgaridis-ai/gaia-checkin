@@ -3,145 +3,545 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShiftKos — Προσέλευση</title>
+<title>ShiftKos — Gaia Garden</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --navy: #0a1628; --gold: #c9a84c; --cream: #f5f0e8;
-    --success: #4caf7d; --alert: #e05c4b; --text-muted: #8899aa;
+    --navy: #0a1628; --navy-mid: #112240; --navy-light: #1d3461;
+    --gold: #c9a84c; --gold-light: #e8c97a; --cream: #f5f0e8;
+    --white: #ffffff; --alert: #e05c4b; --success: #4caf7d;
+    --warning: #f0a500; --text-muted: #8899aa; --sidebar-w: 240px;
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--gold); margin-bottom: 4px; }
-  .logo span { color: white; }
-  .hotel-name { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
-  .clock { font-family: 'DM Serif Display', serif; font-size: 56px; color: var(--cream); letter-spacing: 3px; margin-bottom: 6px; text-align: center; }
-  .date { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
-  .select-label { font-size: 12px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-  select { width: 100%; max-width: 340px; background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 18px; color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; margin-bottom: 28px; appearance: none; }
-  select option { background: #0a1628; }
-  .btn-group { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
-  .btn { width: 100%; padding: 20px; border-radius: 16px; border: none; font-family: 'DM Serif Display', serif; font-size: 22px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 12px; }
-  .btn-start { background: linear-gradient(135deg, #4caf7d, #2d7a50); color: white; }
-  .btn-end { background: linear-gradient(135deg, #e05c4b, #a03020); color: white; }
-  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-  .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
-  .btn:active:not(:disabled) { transform: translateY(0); }
-  .success-screen { display: none; flex-direction: column; align-items: center; text-align: center; }
-  .success-screen.show { display: flex; }
-  .success-icon { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 24px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-  .success-start { background: rgba(76,175,125,0.2); border: 3px solid #4caf7d; }
-  .success-end { background: rgba(224,92,75,0.2); border: 3px solid #e05c4b; }
-  .success-name { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--cream); margin-bottom: 8px; }
-  .success-type { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
-  .success-time { font-family: 'DM Serif Display', serif; font-size: 48px; color: var(--gold); margin-bottom: 32px; }
-  .btn-back { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 32px; color: var(--gold); font-size: 15px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-  .btn-back:hover { background: rgba(201,168,76,0.2); }
-  .db-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25); border-radius: 6px; padding: 2px 8px; color: var(--success); margin-bottom: 20px; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: var(--white); height: 100vh; display: flex; overflow: hidden; }
+  html { height: 100%; }
+  .login-screen { position: fixed; inset: 0; background: var(--navy); display: flex; align-items: center; justify-content: center; z-index: 999; }
+  .login-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(201,168,76,0.2); border-radius: 24px; padding: 48px; width: 400px; }
+  .login-logo { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--gold); text-align: center; margin-bottom: 4px; }
+  .login-logo span { color: var(--white); }
+  .login-sub { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 40px; }
+  .login-field { margin-bottom: 16px; }
+  .login-field label { display: block; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .login-field input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 12px 16px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border 0.2s; }
+  .login-field input:focus { border-color: rgba(201,168,76,0.4); }
+  .login-btn { width: 100%; background: linear-gradient(135deg, var(--gold), #8a6020); border: none; border-radius: 10px; padding: 14px; color: var(--navy); font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 24px; transition: all 0.2s; }
+  .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
+  .login-error { color: var(--alert); font-size: 13px; text-align: center; margin-top: 16px; display: none; }
+  .dashboard { display: none; width: 100%; height: 100vh; }
+  .dashboard.show { display: flex; }
+  .sidebar { width: var(--sidebar-w); background: rgba(7,15,30,0.95); border-right: 1px solid rgba(201,168,76,0.1); display: flex; flex-direction: column; padding: 28px 0; flex-shrink: 0; z-index: 10; height: 100vh; overflow-y: auto; }
+  .sidebar-logo { padding: 0 24px 28px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px; }
+  .sidebar-logo .logo-text { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--gold); }
+  .sidebar-logo .logo-text span { color: var(--white); }
+  .sidebar-logo .hotel-name { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .nav-section { padding: 0 12px; margin-bottom: 8px; }
+  .nav-label { font-size: 10px; letter-spacing: 2px; color: rgba(136,153,170,0.5); text-transform: uppercase; padding: 0 12px; margin-bottom: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font-size: 14px; color: var(--text-muted); transition: all 0.2s; margin-bottom: 2px; }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--cream); }
+  .nav-item.active { background: rgba(201,168,76,0.1); color: var(--gold); }
+  .nav-item .icon { width: 18px; text-align: center; font-size: 15px; }
+  .nav-badge { margin-left: auto; background: var(--alert); color: white; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 10px; }
+  .nav-badge.hidden { display: none; }
+  .sidebar-footer { margin-top: auto; padding: 20px 24px 0; border-top: 1px solid rgba(255,255,255,0.05); }
+  .master-card { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); border-radius: 12px; padding: 12px; }
+  .master-label { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .master-name { font-size: 13px; color: var(--gold); font-weight: 500; }
+  .master-status { display: flex; align-items: center; gap: 6px; margin-top: 8px; font-size: 11px; color: var(--success); }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .logout-btn { width: 100%; margin-top: 12px; background: rgba(224,92,75,0.1); border: 1px solid rgba(224,92,75,0.2); border-radius: 8px; padding: 8px; color: var(--alert); font-size: 12px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; height: 100vh; }
+  .topbar { background: rgba(7,15,30,0.8); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 5; }
+  .topbar-left h1 { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--cream); }
+  .topbar-left p { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .topbar-right { display: flex; align-items: center; gap: 16px; }
+  .clock-badge { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.2); border-radius: 10px; padding: 8px 16px; font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--gold); letter-spacing: 2px; }
+  .day-badge { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 8px 14px; font-size: 12px; color: var(--text-muted); }
+  .content { padding: 28px 32px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 20px; }
+  .stat-icon { font-size: 22px; margin-bottom: 12px; }
+  .stat-val { font-family: 'DM Serif Display', serif; font-size: 32px; color: var(--cream); }
+  .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+  .stat-card.alert-card { border-color: rgba(224,92,75,0.3); background: rgba(224,92,75,0.05); }
+  .stat-card.alert-card .stat-val { color: var(--alert); }
+  .stat-card.success-card { border-color: rgba(76,175,125,0.3); background: rgba(76,175,125,0.05); }
+  .stat-card.success-card .stat-val { color: var(--success); }
+  .section { margin-bottom: 28px; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .section-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--cream); }
+  .section-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .btn-small { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); border-radius: 8px; padding: 7px 14px; color: var(--gold); font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .dept-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: start; }
+  .dept-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; overflow: hidden; }
+  .dept-header { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; }
+  .dept-name { font-size: 14px; font-weight: 600; color: var(--cream); }
+  .dept-count { font-size: 11px; background: rgba(201,168,76,0.15); color: var(--gold); padding: 3px 8px; border-radius: 6px; }
+  .dept-body { padding: 12px 18px; }
+  .emp-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); gap: 8px; }
+  .emp-row:last-child { border-bottom: none; }
+  .emp-info { flex: 1; min-width: 0; }
+  .emp-name { font-size: 13px; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .emp-shift { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .emp-status { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .emp-status.ok { background: rgba(76,175,125,0.15); border: 1px solid rgba(76,175,125,0.3); color: var(--success); }
+  .emp-status.missing { background: rgba(224,92,75,0.15); border: 1px solid rgba(224,92,75,0.3); color: var(--alert); }
+  .emp-status.done { background: rgba(136,153,170,0.15); border: 1px solid rgba(136,153,170,0.3); color: var(--text-muted); }
+  .btn-delete { background: rgba(224,92,75,0.1); border: 1px solid rgba(224,92,75,0.3); border-radius: 6px; padding: 4px 8px; color: var(--alert); font-size: 11px; cursor: pointer; flex-shrink: 0; }
+  .btn-delete:hover { background: rgba(224,92,75,0.25); }
+  .sms-toast { position: fixed; bottom: 24px; right: 24px; width: 340px; background: #111827; border-radius: 18px; padding: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.7); z-index: 100; transform: translateY(120px); opacity: 0; transition: all 0.5s; border: 1px solid rgba(255,255,255,0.08); }
+  .sms-toast.show { transform: translateY(0); opacity: 1; }
+  .toast-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .toast-app { width: 34px; height: 34px; background: #25D366; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .toast-sender { font-size: 13px; font-weight: 600; }
+  .toast-time { margin-left: auto; font-size: 11px; color: rgba(255,255,255,0.3); }
+  .toast-body { font-size: 13px; color: rgba(255,255,255,0.75); line-height: 1.5; background: rgba(255,255,255,0.04); border-radius: 10px; padding: 10px 12px; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal { background: #0d1f3c; border: 1px solid rgba(201,168,76,0.2); border-radius: 20px; padding: 32px; width: 440px; }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--cream); margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--text-muted); margin-bottom: 24px; }
+  .modal-field { margin-bottom: 16px; }
+  .modal-field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+  .modal-field input, .modal-field select { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+  .btn-cancel { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 20px; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; }
+  .btn-save { background: linear-gradient(135deg, var(--gold), #8a6020); border: none; border-radius: 10px; padding: 10px 24px; color: var(--navy); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .view { display: none; }
+  .view.active { display: block; }
+  .db-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25); border-radius: 6px; padding: 2px 8px; color: var(--success); margin-left: 8px; vertical-align: middle; }
+  .loading { text-align: center; padding: 40px; color: var(--text-muted); }
+  .settings-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 28px; max-width: 500px; margin-bottom: 20px; }
+  .settings-box h3 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--cream); margin-bottom: 20px; }
+  .settings-field { margin-bottom: 16px; }
+  .settings-field label { display: block; font-size: 11px; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+  .settings-field input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; }
+  .btn-save-settings { background: linear-gradient(135deg, var(--gold), #8a6020); border: none; border-radius: 10px; padding: 10px 24px; color: var(--navy); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
 </style>
 </head>
 <body>
-<div id="main-screen" style="display:flex;flex-direction:column;align-items:center;width:100%">
-  <div class="logo">Shift<span>Kos</span></div>
-  <div class="hotel-name" id="hotel-name-display">🏨 Gaia Garden Hotel</div>
-  <div class="db-tag">🟢 Supabase Live</div>
-  <div class="clock" id="clock">00:00</div>
-  <div class="date" id="date"></div>
-  <div class="select-label">Επιλέξτε το όνομά σας</div>
-  <select id="employee-select">
-    <option value="">— Φόρτωση... —</option>
-  </select>
-  <div class="btn-group">
-    <button class="btn btn-start" onclick="checkin('start')">🟢 Προσέλευση</button>
-    <button class="btn btn-end" onclick="checkin('end')">🔴 Αποχώρηση</button>
+
+<div class="login-screen" id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Shift<span>Kos</span></div>
+    <div class="login-sub">Σύστημα Διαχείρισης Βαρδιών</div>
+    <div class="login-field"><label>USERNAME</label><input type="text" id="login-username" placeholder="π.χ. gaiagarden"></div>
+    <div class="login-field"><label>PASSWORD</label><input type="password" id="login-password" placeholder="••••••••"></div>
+    <button class="login-btn" onclick="doLogin()">🔐 Σύνδεση</button>
+    <div class="login-error" id="login-error">❌ Λάθος username ή password!</div>
   </div>
 </div>
-<div class="success-screen" id="success-screen">
-  <div class="success-icon" id="success-icon">✅</div>
-  <div class="success-name" id="success-name"></div>
-  <div class="success-type" id="success-type"></div>
-  <div class="success-time" id="success-time"></div>
-  <button class="btn-back" onclick="goBack()">← Νέα Δήλωση</button>
+
+<div class="dashboard" id="dashboard">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-text">Shift<span>Kos</span></div>
+      <div class="hotel-name" id="hotel-name-display">🏨 Hotel</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Κύριο Μενού</div>
+      <div class="nav-item active" onclick="setNav(this,'dashboard')"><span class="icon">📊</span> Dashboard</div>
+      <div class="nav-item" onclick="setNav(this,'employees')"><span class="icon">👥</span> Εργαζόμενοι</div>
+      <div class="nav-item" onclick="setNav(this,'schedule')"><span class="icon">📅</span> Πρόγραμμα</div>
+      <div class="nav-item" onclick="setNav(this,'alerts')"><span class="icon">⚠️</span> Ειδοποιήσεις <span class="nav-badge" id="alert-badge">0</span></div>
+    </div>
+    <div class="nav-section" style="margin-top:12px">
+      <div class="nav-label">Σύστημα</div>
+      <div class="nav-item" onclick="simulateWA()"><span class="icon">💬</span> Test WhatsApp</div>
+      <div class="nav-item" onclick="setNav(this,'settings')"><span class="icon">⚙️</span> Ρυθμίσεις</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="master-card">
+        <div class="master-label">Υπεύθυνος</div>
+        <div class="master-name">👑 Μάστερ</div>
+        <div class="master-status"><div class="status-dot"></div> Λαμβάνει ειδοποιήσεις</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">🚪 Αποσύνδεση</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 id="page-title">Dashboard</h1>
+        <p id="page-sub">Επισκόπηση βαρδιών <span class="db-tag">🟢 Supabase Live</span></p>
+      </div>
+      <div class="topbar-right">
+        <div class="day-badge" id="today-day"></div>
+        <div class="clock-badge" id="main-clock">00:00</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="view active" id="view-dashboard">
+        <div class="stats-row">
+          <div class="stat-card success-card"><div class="stat-icon">✅</div><div class="stat-val" id="stat-ok">–</div><div class="stat-label">Δήλωσαν βάρδια</div></div>
+          <div class="stat-card alert-card"><div class="stat-icon">⚠️</div><div class="stat-val" id="stat-missing">–</div><div class="stat-label">Δεν δήλωσαν</div></div>
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-val" id="stat-total">–</div><div class="stat-label">Σύνολο εργαζομένων</div></div>
+          <div class="stat-card"><div class="stat-icon">🏢</div><div class="stat-val" id="stat-depts">–</div><div class="stat-label">Τμήματα</div></div>
+        </div>
+        <div class="section">
+          <div class="section-header">
+            <div><div class="section-title">📋 Τμήματα & Βάρδιες</div><div class="section-sub">🟢 Δήλωσε &nbsp;🔴 Δεν δήλωσε</div></div>
+            <button class="btn-small" onclick="openAddModal()">+ Προσθήκη</button>
+          </div>
+          <div class="dept-grid" id="dept-grid"><div class="loading">Φόρτωση...</div></div>
+        </div>
+      </div>
+
+      <div class="view" id="view-employees">
+        <div class="section-header" style="margin-bottom:20px">
+          <div><div class="section-title">👥 Όλοι οι Εργαζόμενοι</div><div class="section-sub" id="emp-subtitle">Φόρτωση...</div></div>
+          <button class="btn-small" onclick="openAddModal()">+ Νέος</button>
+        </div>
+        <div id="emp-list-full"></div>
+      </div>
+
+      <div class="view" id="view-schedule">
+        <div class="section-title" style="margin-bottom:20px">📅 Εβδομαδιαίο Πρόγραμμα</div>
+        <div id="schedule-grid"></div>
+      </div>
+
+      <div class="view" id="view-alerts">
+        <div class="section-title" style="margin-bottom:20px">⚠️ Ειδοποιήσεις</div>
+        <div id="alerts-view"></div>
+      </div>
+
+      <div class="view" id="view-settings">
+        <div class="section-title" style="margin-bottom:20px">⚙️ Ρυθμίσεις</div>
+        <div class="settings-box">
+          <h3>🏨 Στοιχεία Ξενοδοχείου</h3>
+          <div class="settings-field"><label>ΟΝΟΜΑ ΞΕΝΟΔΟΧΕΙΟΥ</label><input type="text" id="set-hotel-name" placeholder="π.χ. Gaia Garden"></div>
+          <div class="settings-field"><label>ΚΙΝΗΤΟ ΜΑΣΤΕΡ (με +30)</label><input type="text" id="set-master-phone" placeholder="π.χ. +306912345678"></div>
+          <button class="btn-save-settings" onclick="saveSettings()">💾 Αποθήκευση</button>
+        </div>
+        <div class="settings-box">
+          <h3>🔑 Αλλαγή Password</h3>
+          <div class="settings-field"><label>ΝΕΟ PASSWORD</label><input type="password" id="set-new-password" placeholder="Νέο password"></div>
+          <button class="btn-save-settings" onclick="savePassword()">💾 Αλλαγή</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div class="sms-toast" id="sms-toast">
+  <div class="toast-header">
+    <div class="toast-app">💬</div>
+    <div><div class="toast-sender">ShiftKos</div></div>
+    <div class="toast-time" id="toast-time"></div>
+  </div>
+  <div class="toast-body" id="toast-body"></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Νέος Εργαζόμενος</h3>
+    <p>Αποθήκευση στο Supabase</p>
+    <div class="modal-field"><label>ΟΝΟΜΑ ΕΠΩΝΥΜΟ</label><input type="text" placeholder="π.χ. ΠΑΠΑΔΟΠΟΥΛΟΣ ΓΙΩΡΓΟΣ" id="new-name"></div>
+    <div class="modal-field"><label>ΤΜΗΜΑ</label>
+      <select id="new-dept">
+        <option>Εστιατόριο</option><option>Μπαρ</option><option>Κουζίνα</option>
+        <option>Υποδοχή</option><option>Οροφοκομία</option><option>Συντήρηση</option><option>Κήπος</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>ΩΡΑ ΕΝΑΡΞΗΣ</label>
+      <select id="new-start">
+        <option value="07:00">07:00</option><option value="09:00">09:00</option>
+        <option value="15:00">15:00</option><option value="17:00">17:00</option>
+        <option value="21:00">21:00</option><option value="23:00">23:00</option>
+      </select>
+    </div>
+    <div class="modal-field"><label>ΩΡΑ ΛΗΞΗΣ</label>
+      <select id="new-end">
+        <option value="15:30">15:30</option><option value="17:30">17:30</option>
+        <option value="23:30">23:30</option><option value="01:20">01:20</option>
+        <option value="07:30">07:30</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Άκυρο</button>
+      <button class="btn-save" id="save-btn" onclick="addEmployee()">💾 Αποθήκευση</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://yohhvfykdlzcrnnorhke.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_s0Q12lYyridNT8Yos-7qVQ_z_3ACT95';
-const HOTEL_ID = 1;
+const WORKER_URL = 'https://shiftkos-sms.thanos2-1.workers.dev';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ICONS = {'Εστιατόριο':'🍽️','Μπαρ':'🍹','Κουζίνα':'👨‍🍳','Υποδοχή':'🏨','Οροφοκομία':'🛏️','Συντήρηση':'🔧','Κήπος':'🌿'};
+let employees = [];
+let currentHotel = null;
 
 function updateClock() {
   const now = new Date();
-  document.getElementById('clock').textContent = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
-  document.getElementById('date').textContent = now.toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('main-clock').textContent = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('today-day').textContent = now.toLocaleDateString('el-GR',{weekday:'long',day:'numeric',month:'long'});
 }
 setInterval(updateClock, 1000);
 updateClock();
 
+async function sendWhatsApp(to, message) {
+  const response = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ to: to, message: message })
+  });
+  return response.json();
+}
+
+async function simulateWA() {
+  const phone = currentHotel ? currentHotel.master_phone : '';
+  if (!phone) { alert('Βάλε αριθμό Μάστερ στις Ρυθμίσεις!'); return; }
+  showToast('<strong>⏳ Αποστολή WhatsApp...</strong>');
+  const result = await sendWhatsApp(phone, '✅ Test μήνυμα από ShiftKos! Το σύστημα λειτουργεί!');
+  if (result.sid) {
+    showToast('<strong>✅ WhatsApp εστάλη στον Μάστερ!</strong>');
+  } else {
+    showToast('<strong>❌ Error: </strong>' + (result.message || 'Άγνωστο σφάλμα'));
+  }
+}
+
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const { data, error } = await sb.from('hotels').select('*').eq('username', username).eq('password', password).single();
+  if (error || !data) { document.getElementById('login-error').style.display = 'block'; return; }
+  currentHotel = data;
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'flex';
+  document.getElementById('hotel-name-display').textContent = '🏨 ' + data.name;
+  document.getElementById('set-hotel-name').value = data.name;
+  document.getElementById('set-master-phone').value = data.master_phone || '';
+  loadEmployees();
+}
+
+document.getElementById('login-password').addEventListener('keypress', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function doLogout() {
+  currentHotel = null;
+  employees = [];
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
 async function loadEmployees() {
-  const { data, error } = await sb.from('employees').select('*').eq('hotel_id', HOTEL_ID).order('department').order('name');
+  const { data, error } = await sb.from('employees').select('*').eq('hotel_id', currentHotel.id).order('department').order('name');
   if (error) { console.error(error); return; }
-  const select = document.getElementById('employee-select');
-  const currentVal = select.value;
-  select.innerHTML = '<option value="">— Επιλογή —</option>';
-  const grouped = data.reduce(function(g, e) { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
+  employees = data.map(function(e) { return Object.assign({}, e, {status: e.status || 'missing'}); });
+  updateStats();
+  renderDepts();
+}
+
+function groupByDept() {
+  return employees.reduce(function(g, e) { (g[e.department] = g[e.department]||[]).push(e); return g; }, {});
+}
+
+function updateStats() {
+  const total = employees.length;
+  const missing = employees.filter(function(e) { return e.status === 'missing'; }).length;
+  const ok = employees.filter(function(e) { return e.status === 'ok'; }).length;
+  const depts = Object.keys(groupByDept()).length;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-missing').textContent = missing;
+  document.getElementById('stat-depts').textContent = depts;
+  var badge = document.getElementById('alert-badge');
+  if (missing > 0) {
+    badge.textContent = missing;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+  document.getElementById('emp-subtitle').textContent = total + ' εργαζόμενοι — ' + depts + ' τμήματα';
+}
+
+function renderDepts() {
+  const grid = document.getElementById('dept-grid');
+  const grouped = groupByDept();
+  grid.innerHTML = '';
   Object.entries(grouped).forEach(function(entry) {
     const dept = entry[0];
     const emps = entry[1];
     const icon = ICONS[dept] || '🏢';
-    const group = document.createElement('optgroup');
-    group.label = icon + ' ' + dept;
-    emps.forEach(function(emp) {
-      const opt = document.createElement('option');
-      opt.value = emp.name;
-      opt.textContent = emp.name;
-      group.appendChild(opt);
-    });
-    select.appendChild(group);
+    const card = document.createElement('div');
+    card.className = 'dept-card';
+    card.innerHTML = '<div class="dept-header"><div class="dept-name">' + icon + ' ' + dept + '</div><span class="dept-count">' + emps.length + ' άτομα</span></div><div class="dept-body">' +
+      emps.map(function(emp) {
+        const statusClass = emp.status === 'ok' ? 'ok' : emp.status === 'done' ? 'done' : 'missing';
+        const statusIcon = emp.status === 'ok' ? '✓' : emp.status === 'done' ? '🏁' : '!';
+        return '<div class="emp-row"><div class="emp-info"><div class="emp-name">' + emp.name + '</div><div class="emp-shift">🕐 ' + emp.shift_start + '–' + emp.shift_end + '</div></div><div class="emp-status ' + statusClass + '">' + statusIcon + '</div><button class="btn-delete" onclick="deleteEmployee(' + emp.employees + ',\'' + emp.name + '\')">🗑️</button></div>';
+      }).join('') + '</div>';
+    grid.appendChild(card);
   });
-  if (currentVal) select.value = currentVal;
 }
 
-async function checkin(type) {
-  const select = document.getElementById('employee-select');
-  const employeeName = select.value;
-  if (!employeeName) { alert('Παρακαλώ επιλέξτε το όνομά σας!'); return; }
-  document.querySelectorAll('.btn').forEach(function(b) { b.disabled = true; });
-  const now = new Date();
-  const time = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
-  const insertResult = await sb.from('checkins').insert([{
-    employee_name: employeeName,
-    type: type,
-    created_at: new Date(now.getTime() + 3 * 60 * 60 * 1000).toISOString()
-  }]);
-  if (insertResult.error) {
-    document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
-    alert('❌ Σφάλμα: ' + insertResult.error.message);
+function renderEmployeesFull() {
+  const list = document.getElementById('emp-list-full');
+  const grouped = groupByDept();
+  list.innerHTML = '';
+  Object.entries(grouped).forEach(function(entry) {
+    const dept = entry[0];
+    const emps = entry[1];
+    const icon = ICONS[dept] || '🏢';
+    const s = document.createElement('div');
+    s.style.marginBottom = '20px';
+    s.innerHTML = '<div style="font-size:13px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px">' + icon + ' ' + dept + '</div><div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:14px;overflow:hidden">' +
+      emps.map(function(emp, i) {
+        const statusClass = emp.status === 'ok' ? 'ok' : emp.status === 'done' ? 'done' : 'missing';
+        const statusIcon = emp.status === 'ok' ? '✓' : emp.status === 'done' ? '🏁' : '!';
+        return '<div style="display:flex;align-items:center;gap:14px;padding:14px 18px;' + (i<emps.length-1?'border-bottom:1px solid rgba(255,255,255,0.04)':'') + '"><div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy-light),var(--gold));display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--navy);font-weight:600">' + emp.name.charAt(0) + '</div><div style="flex:1"><div style="font-size:14px;color:var(--cream)">' + emp.name + '</div><div style="font-size:12px;color:var(--text-muted)">🕐 ' + emp.shift_start + '–' + emp.shift_end + '</div></div><div class="emp-status ' + statusClass + '">' + statusIcon + '</div><button class="btn-delete" onclick="deleteEmployee(' + emp.employees + ',\'' + emp.name + '\')">🗑️</button></div>';
+      }).join('') + '</div>';
+    list.appendChild(s);
+  });
+}
+
+async function deleteEmployee(empId, name) {
+  if (!confirm('Διαγραφή ' + name + ';')) return;
+  var result = await sb.from('employees').delete().eq('employees', empId);
+  if (result.error) { alert('❌ ' + result.error.message); return; }
+  employees = employees.filter(function(e) { return e.employees !== empId; });
+  updateStats();
+  renderDepts();
+  renderEmployeesFull();
+  showToast('🗑️ <strong>' + name + '</strong> διαγράφηκε!');
+}
+
+function renderSchedule() {
+  const days = ['Δευτέρα','Τρίτη','Τετάρτη','Πέμπτη','Παρασκευή'];
+  document.getElementById('schedule-grid').innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:10px 14px;color:var(--text-muted);font-weight:400;border-bottom:1px solid rgba(255,255,255,0.06)">Εργαζόμενος</th>' + days.map(function(d){return '<th style="padding:10px 14px;color:var(--text-muted);font-weight:400;border-bottom:1px solid rgba(255,255,255,0.06)">' + d + '</th>';}).join('') + '</tr></thead><tbody>' + employees.map(function(emp){return '<tr style="border-bottom:1px solid rgba(255,255,255,0.03)"><td style="padding:10px 14px"><div style="color:var(--cream)">' + emp.name + '</div><div style="font-size:11px;color:var(--text-muted)">' + emp.department + '</div></td>' + days.map(function(){return '<td style="padding:10px 14px;text-align:center"><div style="background:rgba(76,175,125,0.12);border:1px solid rgba(76,175,125,0.25);border-radius:6px;padding:4px 8px;font-size:11px;color:#7ddba9">' + emp.shift_start + '–' + emp.shift_end + '</div></td>';}).join('') + '</tr>';}).join('') + '</tbody></table></div>';
+}
+
+async function renderAlerts() {
+  const el = document.getElementById('alerts-view');
+  el.innerHTML = '<div class="loading">Φόρτωση...</div>';
+  const { data, error } = await sb.from('alerts').select('*').eq('hotel_id', currentHotel.id).order('created_at', { ascending: false }).limit(50);
+  if (error || !data || !data.length) {
+    el.innerHTML = '<div class="loading">✅ Δεν υπάρχουν ειδοποιήσεις</div>';
     return;
   }
-  await sb.from('employees').update({ status: type === 'start' ? 'ok' : 'done' }).eq('name', employeeName).eq('hotel_id', HOTEL_ID);
-  document.querySelectorAll('.btn').forEach(function(b) { b.disabled = false; });
-  document.getElementById('success-icon').textContent = type === 'start' ? '✅' : '🏁';
-  document.getElementById('success-icon').className = 'success-icon ' + (type === 'start' ? 'success-start' : 'success-end');
-  document.getElementById('success-name').textContent = employeeName;
-  document.getElementById('success-type').textContent = type === 'start' ? 'ΕΠΙΤΥΧΗΣ ΔΗΛΩΣΗ ΠΡΟΣΕΛΕΥΣΗΣ' : 'ΕΠΙΤΥΧΗΣ ΔΗΛΩΣΗ ΑΠΟΧΩΡΗΣΗΣ';
-  document.getElementById('success-time').textContent = time;
-  document.getElementById('main-screen').style.display = 'none';
-  document.getElementById('success-screen').classList.add('show');
-  setTimeout(goBack, 5000);
+  el.innerHTML = '<div style="display:flex;flex-direction:column;gap:10px">' + data.map(function(alert) {
+    const dt = new Date(alert.created_at);
+    const dateStr = dt.toLocaleDateString('el-GR', {weekday:'short', day:'numeric', month:'short'});
+    const timeStr = dt.toLocaleTimeString('el-GR', {hour:'2-digit', minute:'2-digit'});
+    return '<div style="background:rgba(224,92,75,0.06);border:1px solid rgba(224,92,75,0.2);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px"><div style="font-size:20px">🔴</div><div style="flex:1"><div style="color:var(--cream);font-weight:500">' + alert.employee_name + '</div><div style="font-size:12px;color:var(--text-muted);margin-top:3px">' + alert.department + ' • ' + alert.shift_time + ' • Δεν δήλωσε ' + alert.type + '</div><div style="font-size:11px;color:var(--gold);margin-top:4px">🕐 ' + dateStr + ' ' + timeStr + '</div></div><div style="font-size:11px;background:rgba(240,165,0,0.1);border:1px solid rgba(240,165,0,0.2);border-radius:6px;padding:4px 10px;color:var(--warning)">⏳ Εκκρεμεί</div></div>';
+  }).join('') + '</div>';
+  document.getElementById('alert-badge').classList.add('hidden');
 }
 
-function goBack() {
-  document.getElementById('main-screen').style.display = 'flex';
-  document.getElementById('success-screen').classList.remove('show');
-  document.getElementById('employee-select').value = '';
-  loadEmployees();
+function setNav(el, view) {
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  document.getElementById('view-'+view).classList.add('active');
+  var titles = {dashboard:'Dashboard',employees:'Εργαζόμενοι',schedule:'Πρόγραμμα',alerts:'Ειδοποιήσεις',settings:'Ρυθμίσεις'};
+  document.getElementById('page-title').textContent = titles[view];
+  if (view==='employees') renderEmployeesFull();
+  if (view==='schedule') renderSchedule();
+  if (view==='alerts') renderAlerts();
 }
 
-loadEmployees();
-setInterval(loadEmployees, 30000);
+function showToast(msg) {
+  var now = new Date().toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('toast-time').textContent = now;
+  document.getElementById('toast-body').innerHTML = msg;
+  var t = document.getElementById('sms-toast');
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+function openAddModal() { document.getElementById('modal-overlay').classList.add('show'); }
+function closeModal() { document.getElementById('modal-overlay').classList.remove('show'); }
+
+async function addEmployee() {
+  var name = document.getElementById('new-name').value.trim().toUpperCase();
+  var dept = document.getElementById('new-dept').value;
+  var start = document.getElementById('new-start').value;
+  var end = document.getElementById('new-end').value;
+  if (!name) { alert('Βάλε όνομα!'); return; }
+  var btn = document.getElementById('save-btn');
+  btn.textContent = '⏳ Αποθήκευση...';
+  btn.disabled = true;
+  var result = await sb.from('employees').insert([{ name: name, department: dept, shift_start: start, shift_end: end, status: 'missing', hotel_id: currentHotel.id }]).select();
+  btn.textContent = '💾 Αποθήκευση';
+  btn.disabled = false;
+  if (result.error) { alert('❌ ' + result.error.message); return; }
+  employees.push(Object.assign({}, result.data[0], {status: 'missing'}));
+  employees.sort(function(a,b){ return a.department.localeCompare(b.department) || a.name.localeCompare(b.name); });
+  updateStats();
+  renderDepts();
+  closeModal();
+  document.getElementById('new-name').value = '';
+  showToast('✅ <strong>' + name + '</strong> προστέθηκε!');
+}
+
+async function saveSettings() {
+  var name = document.getElementById('set-hotel-name').value.trim();
+  var phone = document.getElementById('set-master-phone').value.trim();
+  if (!name) { alert('Βάλε όνομα!'); return; }
+  var result = await sb.from('hotels').update({ name: name, master_phone: phone }).eq('id', currentHotel.id);
+  if (result.error) { alert('❌ ' + result.error.message); return; }
+  currentHotel.name = name;
+  currentHotel.master_phone = phone;
+  document.getElementById('hotel-name-display').textContent = '🏨 ' + name;
+  showToast('✅ Ρυθμίσεις αποθηκεύτηκαν!');
+}
+
+async function savePassword() {
+  var newPass = document.getElementById('set-new-password').value.trim();
+  if (!newPass) { alert('Βάλε νέο password!'); return; }
+  var result = await sb.from('hotels').update({ password: newPass }).eq('id', currentHotel.id);
+  if (result.error) { alert('❌ ' + result.error.message); return; }
+  document.getElementById('set-new-password').value = '';
+  showToast('✅ Password άλλαξε!');
+}
+
+async function sendAlert(name, dept, time, type) {
+  const phone = currentHotel ? currentHotel.master_phone : '';
+  if (!phone) return;
+  await sb.from('alerts').insert([{
+    employee_name: name,
+    department: dept,
+    shift_time: time,
+    type: type,
+    hotel_id: currentHotel.id
+  }]);
+  const msg = '⚠️ SHIFTKOS: ' + name + ' (' + dept + ') δεν δήλωσε ' + type + ' βάρδιας ' + time + '.';
+  await sendWhatsApp(phone, msg);
+  showToast('⚠️ <strong>' + name + '</strong> δεν δήλωσε ' + type + '!');
+}
+
+function checkShifts() {
+  const now = new Date();
+  const currentTime = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  employees.forEach(function(emp) {
+    const startPlus10 = addMinutes(emp.shift_start, 10);
+    const endPlus10 = addMinutes(emp.shift_end, 10);
+    if (currentTime === startPlus10 && emp.status === 'missing') { sendAlert(emp.name, emp.department, emp.shift_start, 'έναρξη'); }
+    if (currentTime === endPlus10 && emp.status === 'ok') { sendAlert(emp.name, emp.department, emp.shift_end, 'λήξη'); }
+  });
+}
+
+function addMinutes(time, mins) {
+  const parts = time.split(':');
+  const h = parseInt(parts[0]);
+  const m = parseInt(parts[1]);
+  const total = h * 60 + m + mins;
+  const newH = Math.floor(total / 60) % 24;
+  const newM = total % 60;
+  return newH.toString().padStart(2,'0') + ':' + newM.toString().padStart(2,'0');
+}
+
+setInterval(function() { if (currentHotel) loadEmployees(); }, 30000);
+setInterval(function() { if (currentHotel) checkShifts(); }, 600000);
 </script>
 </body>
 </html>
