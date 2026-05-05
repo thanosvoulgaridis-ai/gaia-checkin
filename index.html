@@ -3,28 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ShiftKos — Προσέλευση</title>
+<title>ShiftGuard — Προσέλευση</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --navy: #0a1628; --gold: #c9a84c; --cream: #f5f0e8;
+    --navy: #0f1c3f; --red: #E8261A; --red-light: #ff4438; --cream: #f5f0e8;
     --success: #4caf7d; --alert: #e05c4b; --text-muted: #8899aa;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--navy); color: white; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
-  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--gold); margin-bottom: 4px; }
-  .logo span { color: white; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 28px; color: white; margin-bottom: 4px; }
+  .logo span { color: var(--red); }
   .hotel-name { font-size: 13px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
   .clock { font-family: 'DM Serif Display', serif; font-size: 56px; color: var(--cream); letter-spacing: 3px; margin-bottom: 6px; text-align: center; }
   .date { font-size: 14px; color: var(--text-muted); margin-bottom: 40px; text-align: center; }
   .select-label { font-size: 12px; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
-  select { width: 100%; max-width: 340px; background: rgba(255,255,255,0.05); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 18px; color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; margin-bottom: 28px; appearance: none; }
-  select option { background: #0a1628; }
+  select { width: 100%; max-width: 340px; background: rgba(255,255,255,0.05); border: 1px solid rgba(232,38,26,0.35); border-radius: 12px; padding: 14px 18px; color: white; font-family: 'DM Sans', sans-serif; font-size: 16px; outline: none; margin-bottom: 28px; appearance: none; }
+  select option { background: #0f1c3f; }
   .btn-group { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 340px; }
   .btn { width: 100%; padding: 20px; border-radius: 16px; border: none; font-family: 'DM Serif Display', serif; font-size: 22px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 12px; }
-  .btn-start { background: linear-gradient(135deg, #4caf7d, #2d7a50); color: white; }
-  .btn-end { background: linear-gradient(135deg, #e05c4b, #a03020); color: white; }
+  .btn-start { background: linear-gradient(135deg, #1B2B6B, #243590); color: white; border: 1px solid rgba(255,255,255,0.15); }
+  .btn-end { background: linear-gradient(135deg, #E8261A, #b81d10); color: white; }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
   .btn:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
   .btn:active:not(:disabled) { transform: translateY(0); }
@@ -32,19 +32,19 @@
   .success-screen.show { display: flex; }
   .success-icon { width: 100px; height: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 48px; margin-bottom: 24px; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
   @keyframes pop { 0%{transform:scale(0)} 100%{transform:scale(1)} }
-  .success-start { background: rgba(76,175,125,0.2); border: 3px solid #4caf7d; }
-  .success-end { background: rgba(224,92,75,0.2); border: 3px solid #e05c4b; }
+  .success-start { background: rgba(27,43,107,0.3); border: 3px solid #1B2B6B; }
+  .success-end { background: rgba(232,38,26,0.2); border: 3px solid #E8261A; }
   .success-name { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--cream); margin-bottom: 8px; }
   .success-type { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
-  .success-time { font-family: 'DM Serif Display', serif; font-size: 48px; color: var(--gold); margin-bottom: 32px; }
-  .btn-back { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 14px 32px; color: var(--gold); font-size: 15px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-  .btn-back:hover { background: rgba(201,168,76,0.2); }
+  .success-time { font-family: 'DM Serif Display', serif; font-size: 48px; color: var(--red); margin-bottom: 32px; }
+  .btn-back { background: rgba(232,38,26,0.1); border: 1px solid rgba(232,38,26,0.3); border-radius: 12px; padding: 14px 32px; color: var(--red); font-size: 15px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
+  .btn-back:hover { background: rgba(232,38,26,0.2); }
   .db-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; background: rgba(76,175,125,0.12); border: 1px solid rgba(76,175,125,0.25); border-radius: 6px; padding: 2px 8px; color: var(--success); margin-bottom: 20px; }
 </style>
 </head>
 <body>
 <div id="main-screen" style="display:flex;flex-direction:column;align-items:center;width:100%">
-  <div class="logo">Shift<span>Kos</span></div>
+  <div class="logo">Shift<span>Guard</span></div>
   <div class="hotel-name" id="hotel-name-display">🏨 Gaia Garden Hotel</div>
   <div class="db-tag">🟢 Supabase Live</div>
   <div class="clock" id="clock">00:00</div>
@@ -71,7 +71,6 @@ const SUPABASE_KEY = 'sb_publishable_s0Q12lYyridNT8Yos-7qVQ_z_3ACT95';
 const HOTEL_ID = 1;
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const ICONS = {'Εστιατόριο':'🍽️','Μπαρ':'🍹','Κουζίνα':'👨‍🍳','Υποδοχή':'🏨','Οροφοκομία':'🛏️','Συντήρηση':'🔧','Κήπος':'🌿'};
-
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent = now.toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
@@ -79,7 +78,6 @@ function updateClock() {
 }
 setInterval(updateClock, 1000);
 updateClock();
-
 async function loadEmployees() {
   const { data, error } = await sb.from('employees').select('*').eq('hotel_id', HOTEL_ID).order('department').order('name');
   if (error) { console.error(error); return; }
@@ -103,7 +101,6 @@ async function loadEmployees() {
   });
   if (currentVal) select.value = currentVal;
 }
-
 async function checkin(type) {
   const select = document.getElementById('employee-select');
   const employeeName = select.value;
@@ -132,14 +129,12 @@ async function checkin(type) {
   document.getElementById('success-screen').classList.add('show');
   setTimeout(goBack, 5000);
 }
-
 function goBack() {
   document.getElementById('main-screen').style.display = 'flex';
   document.getElementById('success-screen').classList.remove('show');
   document.getElementById('employee-select').value = '';
   loadEmployees();
 }
-
 loadEmployees();
 setInterval(loadEmployees, 30000);
 </script>
